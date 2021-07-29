@@ -4,6 +4,16 @@ var path = require('path');
 var cookieParser = require('cookie-parser');
 var logger = require('morgan');
 
+//##### IMPORT PRODUCT ROUTER #####
+const productRouter = require('./app/product/router');
+const categoryRouter = require('./app/category/router');
+const tagRouter = require('./app/tag/router');
+const authRouter = require('./app/auth/router');
+
+//Midleware Decode TOken
+const { decodeToken } = require('./app/auth/midleware');
+
+
 // var indexRouter = require('./routes/index');
 // var usersRouter = require('./routes/users');
 
@@ -18,6 +28,15 @@ app.use(express.json());
 app.use(express.urlencoded({ extended: false }));
 app.use(cookieParser());
 app.use(express.static(path.join(__dirname, 'public')));
+
+//##### GUNAKAN PRODUCT ROUTER #####
+app.use('/api', productRouter);
+app.use('/api', categoryRouter);
+app.use('/api', tagRouter);
+app.use('/auth', authRouter);
+
+//-----MENGGUNAKAN MIDLEWARE-------------//
+app.use(decodeToken());
 
 // app.use('/', indexRouter);
 // app.use('/users', usersRouter);
