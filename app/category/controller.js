@@ -1,8 +1,19 @@
 const Category = require('./model');
 
+const { policyFor } = require('../policy/index');
+
 //store category
 async function store(req, res, next) {
     try {
+        // ----cek policy -----//
+        let policy = policyFor(req.user);
+
+        if (!policy.can('create', 'Category')) {
+            return res.json({
+                error: 1,
+                message: 'Anda tidak memiliki akses'
+            })
+        }
         let payload = req.body
         console.log(payload);
         let category = new Category(payload);
@@ -26,6 +37,15 @@ async function store(req, res, next) {
 //update category
 async function update(req, res, next) {
     try {
+        // ----cek policy -----//
+        let policy = policyFor(req.user);
+
+        if (!policy.can('update', 'Category')) {
+            return res.json({
+                error: 1,
+                message: 'Anda tidak memiliki akses'
+            })
+        }
         let payload = req.body
         console.log(payload);
         let category = await Category.findOneAndUpdate({ _id: req.params.id }, payload, { new: true, runValidators: true })
@@ -46,6 +66,15 @@ async function update(req, res, next) {
 
 async function destroy(req, res, next) {
     try {
+        // ----cek policy -----//
+        let policy = policyFor(req.user);
+
+        if (!policy.can('delete', 'Category')) {
+            return res.json({
+                error: 1,
+                message: 'Anda tidak memiliki akses'
+            })
+        }
         let deleted = await Category.findOneAndDelete({ _id: req.params.id });
 
         return res.json(deleted);

@@ -4,16 +4,23 @@ var path = require('path');
 var cookieParser = require('cookie-parser');
 var logger = require('morgan');
 
+// ######## IMPORT CORS ############## //
+const cors = require('cors');
+
 //##### IMPORT PRODUCT ROUTER #####
 const productRouter = require('./app/product/router');
 const categoryRouter = require('./app/category/router');
 const tagRouter = require('./app/tag/router');
 const authRouter = require('./app/auth/router');
-
+const wilayahRouter = require('./app/wilayah/router');
 //Midleware Decode TOken
 const { decodeToken } = require('./app/auth/midleware');
 
 
+const deleveryRouter = require('./app/delevery-address/router');
+const cartRouter = require('./app/cart/router');
+const orderRouter = require('./app/order/router');
+const invoiceRouter = require('./app/invoice/router');
 // var indexRouter = require('./routes/index');
 // var usersRouter = require('./routes/users');
 
@@ -29,14 +36,25 @@ app.use(express.urlencoded({ extended: false }));
 app.use(cookieParser());
 app.use(express.static(path.join(__dirname, 'public')));
 
+
+// --------CORS -----------//
+app.use(cors());
+
+//-----MENGGUNAKAN MIDLEWARE-------------//
+app.use(decodeToken());
+
 //##### GUNAKAN PRODUCT ROUTER #####
 app.use('/api', productRouter);
 app.use('/api', categoryRouter);
 app.use('/api', tagRouter);
+app.use('/api', wilayahRouter);
 app.use('/auth', authRouter);
+app.use('/api', deleveryRouter);
+app.use('/api', cartRouter);
+app.use('/api', orderRouter);
+app.use('/api', invoiceRouter);
 
-//-----MENGGUNAKAN MIDLEWARE-------------//
-app.use(decodeToken());
+
 
 // app.use('/', indexRouter);
 // app.use('/users', usersRouter);

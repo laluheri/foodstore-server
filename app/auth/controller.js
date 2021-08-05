@@ -8,6 +8,8 @@ const bcrypt = require('bcrypt');
 
 const config = require('../config');
 
+const { getToken } = require('../utils/get-token');
+
 
 async function register(req, res, next) {
     try {
@@ -69,6 +71,24 @@ async function login(req, res, next) {
     })(req, res, next);
 }
 
+async function logout(req, res, next) {
+    let token = getToken(req);
+    let user = await User.findOneAndUpdate({ token: { $in: [token] } }, { $pull: { token } }, { useFindAndModify: false });
+
+    // cek user atau token
+    if (!user || !token) {
+        return res.json({
+            error: 1,
+            message: 'No User Found'
+        });
+    }
+
+    return res.json({
+        error: 0,
+        message: 'Logout Berhasil'
+    });
+}
+
 function me(req, res, next) {
 
     if (!req.user) {
@@ -77,13 +97,15 @@ function me(req, res, next) {
             message: `You're not login or token expired`
         });
     }
-    return res.json("req.user");
-
+    return res.json(req.user);
 }
+
+
 
 module.exports = {
     register,
     localStrategy,
     login,
     me,
+    logout,
 }

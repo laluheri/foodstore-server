@@ -7,6 +7,8 @@ const Tag = require('../tag/model')
 
 const config = require('../config')
 
+const { policyFor } = require('../policy');
+
 // fungsi index untu list data
 async function index(req, res, next) {
 
@@ -24,10 +26,12 @@ async function index(req, res, next) {
                 criteria = {...criteria, category: category._id }
             }
         }
-        if (tags.length) {
+        if (tags && tags.length) {
             tags = await Tag.find({ name: { $in: tags } });
             criteria = {...criteria, tags: { $in: tags.map(tag => tag._id) } }
         }
+
+        let count = await Product.find(criteria).countDocuments();
 
         let product = await Product
             .find(criteria)
@@ -35,8 +39,12 @@ async function index(req, res, next) {
             .skip(parseInt(skip))
             .populate('category')
             .populate('tags')
+            .select('__v')
 
-        return res.json(product);
+        return res.json({
+            data: product,
+            count
+        });
 
     } catch (error) {
         next(error)
@@ -47,6 +55,16 @@ async function index(req, res, next) {
 async function store(req, res, next) {
 
     try {
+        // ----cek policy -----//
+        let policy = policyFor(req.user);
+
+        if (!policy.can('create', 'Product')) {
+            return res.json({
+                error: 1,
+                message: 'Anda tidak memiliki akses'
+            })
+        }
+
         let payload = req.body;
 
         //relasi dengan category mengambil id berdasarkan pencarian nama
@@ -145,6 +163,15 @@ async function store(req, res, next) {
 async function update(req, res, next) {
 
     try {
+        // ----cek policy -----//
+        let policy = policyFor(req.user);
+
+        if (!policy.can('update', 'Product')) {
+            return res.json({
+                error: 1,
+                message: 'Anda tidak memiliki akses'
+            })
+        }
         let payload = req.body;
 
         if (payload.category) {
@@ -253,6 +280,15 @@ async function update(req, res, next) {
 //function distroy
 async function distroy(req, res, next) {
     try {
+        // ----cek policy -----//
+        let policy = policyFor(req.user);
+
+        if (!policy.can('delete', 'Product')) {
+            return res.json({
+                error: 1,
+                message: 'Anda tidak memiliki akses'
+            })
+        }
 
         let product = await Product.findOneAndDelete({ _id: req.params.id });
         console.log(product);
